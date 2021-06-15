@@ -31,7 +31,7 @@ find / ! -path "/analysis/*" ! -path "/container-extractors/*" -type l | sort > 
 # analyse symbolic links
 rm -f /analysis/filesystem/symlinks.txt
 touch /analysis/filesystem/symlinks.txt
-set filelist="$(cat /analysis/filesystem/links.txt)"
+filelist="$(cat /analysis/filesystem/links.txt)"
 for file in $filelist
 do
   echo "$file --> `readlink $file`" >> /analysis/filesystem/symlinks.txt

@@ -18,6 +18,35 @@
 
 echo "Executing pfsense-extractor.sh"
 
+# check the input flags
+
+OPTINT=1
+OPTSPEC="t:"
+
+machineTag=""
+
+while getopts "${OPTSPEC}" fopt ; do
+  #echo "DEBUG: $fopt . $OPTARG"
+  case "${fopt}" in
+    t)
+      # set, at runtime, a custom machineTag for identification.
+      # should only contain the base64 characters and - and _
+      machineTag="${OPTARG//[^a-zA-Z0-9_\-\/+]/}"
+      ;;
+    ?)
+      exit 1
+      ;;
+  esac
+done
+
+# create folder structure in analysis folder (assuming sufficient permissions)
+mkdir -p /analysis/package-meta
+mkdir -p /analysis/package-files
+mkdir -p /analysis/filesystem
+
+# write machineTag
+printf "%s\n" "$machineTag" > /analysis/machineTag.txt
+
 # create folder structure in analysis folder (assuming sufficient permissions)
 mkdir -p /analysis/package-meta
 mkdir -p /analysis/package-files

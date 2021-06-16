@@ -18,6 +18,8 @@
 
 echo "Executing centos-extractor.sh"
 
+outDir="/var/opt/metaeffekt/extraction/analysis"
+
 # check the input flags
 
 OPTINT=1
@@ -40,62 +42,57 @@ while getopts "${OPTSPEC}" fopt ; do
 done
 
 # create folder structure in analysis folder (assuming sufficient permissions)
-mkdir -p /analysis/package-meta
-mkdir -p /analysis/package-files
-mkdir -p /analysis/filesystem
+mkdir -p "${outDir}"/package-meta
+mkdir -p "${outDir}"/package-files
+mkdir -p "${outDir}"/filesystem
 
 # write machineTag
-printf "%s\n" "$machineTag" > /analysis/machineTag.txt
-
-# create folder structure in analysis folder (assuming sufficient permissions)
-mkdir -p /analysis/package-meta
-mkdir -p /analysis/package-files
-mkdir -p /analysis/filesystem
+printf "%s\n" "$machineTag" > "${outDir}"/machineTag.txt
 
 # generate list of all files (excluding the analysis folders; excluding symlinks)
-find / ! -path "/analysis/*" ! -path "/container-extractors/*" -type f | sort > /analysis/filesystem/files.txt
-find / ! -path "/analysis/*" ! -path "/container-extractors/*" -type d | sort > /analysis/filesystem/folders.txt
-find / ! -path "/analysis/*" ! -path "/container-extractors/*" -type l | sort > /analysis/filesystem/links.txt
+find / ! -path "${outDir}/*" ! -path "/container-extractors/*" -type f | sort > "${outDir}"/filesystem/files.txt
+find / ! -path "${outDir}/*" ! -path "/container-extractors/*" -type d | sort > "${outDir}"/filesystem/folders.txt
+find / ! -path "${outDir}/*" ! -path "/container-extractors/*" -type l | sort > "${outDir}"/filesystem/links.txt
 
 # analyse symbolic links
-rm -f /analysis/filesystem/symlinks.txt
-touch /analysis/filesystem/symlinks.txt
-filelist=`cat /analysis/filesystem/links.txt`
+rm -f "${outDir}"/filesystem/symlinks.txt
+touch "${outDir}"/filesystem/symlinks.txt
+filelist=`cat "${outDir}"/filesystem/links.txt`
 for file in $filelist
 do
-  echo "$file --> `readlink $file`" >> /analysis/filesystem/symlinks.txt
+  echo "$file --> `readlink $file`" >> "${outDir}"/filesystem/symlinks.txt
 done
 
 # examine distributions metadata
-uname -a > /analysis/uname.txt
-cat /etc/issue > /analysis/issue.txt
-cat /etc/centos-release > /analysis/release.txt || true
-cat /etc/redhat-release > /analysis/release.txt || true
+uname -a > "${outDir}"/uname.txt
+cat /etc/issue > "${outDir}"/issue.txt
+cat /etc/centos-release > "${outDir}"/release.txt || true
+cat /etc/redhat-release > "${outDir}"/release.txt || true
 
 # list packages
-rpm -qa --qf '| %{NAME} | %{VERSION} | %{LICENSE} |\n' | sort > /analysis/packages_rpm.txt
+rpm -qa --qf '| %{NAME} | %{VERSION} | %{LICENSE} |\n' | sort > "${outDir}"/packages_rpm.txt
 
 # list packages names (no version included)
-rpm -qa --qf '%{NAME}\n' | sort > /analysis/packages_rpm-name-only.txt
+rpm -qa --qf '%{NAME}\n' | sort > "${outDir}"/packages_rpm-name-only.txt
 
 # query package metadata and covered files
-packagenames=`cat /analysis/packages_rpm-name-only.txt`
+packagenames=`cat "${outDir}"/packages_rpm-name-only.txt`
 for package in $packagenames
 do
-  rpm -qi $package > /analysis/package-meta/${package}_rpm.txt
-  rpm -q --filesbypkg ${package} | sed 's/[^/]*//' | sort > /analysis/package-files/${package}_files.txt
+  rpm -qi $package > "${outDir}"/package-meta/"${package}"_rpm.txt
+  rpm -q --filesbypkg "${package}" | sed 's/[^/]*//' | sort > "${outDir}"/package-files/"${package}"_files.txt
 done
 
 # copy resources in /usr/share/doc
-mkdir -p /analysis/usr-share-doc/
-cp --no-preserve=mode -rf /usr/share/doc/* /analysis/usr-share-doc/ || true
+mkdir -p "${outDir}"/usr-share-doc/
+cp --no-preserve=mode -rf /usr/share/doc/* "${outDir}"/usr-share-doc/ || true
 
 # copy resources in /usr/share/licenses
-mkdir -p /analysis/usr-share-licenses/
-cp --no-preserve=mode -rf /usr/share/licenses/* /analysis/usr-share-licenses/ || true
+mkdir -p "${outDir}"/usr-share-licenses/
+cp --no-preserve=mode -rf /usr/share/licenses/* "${outDir}"/usr-share-licenses/ || true
 
 # if docker is installed dump the image list
-command -v docker && docker images > /analysis/docker-images.txt || true
+command -v docker && docker images > "${outDir}"/docker-images.txt || true
 
 # adapt ownership of extracted files to match folder creator user and group
-chown `stat -c '%u' /analysis`:`stat -c '%g' /analysis` -R /analysis
+chown `stat -c '%u' "${outDir}"`:`stat -c '%g' "${outDir}"` -R "${outDir}"

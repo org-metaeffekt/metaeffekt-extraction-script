@@ -18,6 +18,8 @@
 
 echo "Executing debian-extractor.sh"
 
+outDir="/var/opt/metaeffekt/extraction/analysis"
+
 # check the input flags
 
 OPTINT=1
@@ -40,56 +42,56 @@ while getopts "${OPTSPEC}" fopt ; do
 done
 
 # create folder structure in analysis folder (assuming sufficient permissions)
-mkdir -p /analysis/package-meta
-mkdir -p /analysis/package-files
-mkdir -p /analysis/filesystem
+mkdir -p "${outDir}"/package-meta
+mkdir -p "${outDir}"/package-files
+mkdir -p "${outDir}"/filesystem
 
 # write machineTag
-printf "%s\n" "$machineTag" > /analysis/machineTag.txt
+printf "%s\n" "$machineTag" > "${outDir}"/machineTag.txt
 
 # generate list of all files (excluding the analysis folders; excluding symlinks)
-find / ! -path "/analysis/*" ! -path "/container-extractors/*" -type f | sort > /analysis/filesystem/files.txt
-find / ! -path "/analysis/*" ! -path "/container-extractors/*" -type d | sort > /analysis/filesystem/folders.txt
-find / ! -path "/analysis/*" ! -path "/container-extractors/*" -type l | sort > /analysis/filesystem/links.txt
+find / ! -path "${outDir}/*" ! -path "/container-extractors/*" -type f | sort > "${outDir}"/filesystem/files.txt
+find / ! -path "${outDir}/*" ! -path "/container-extractors/*" -type d | sort > "${outDir}"/filesystem/folders.txt
+find / ! -path "${outDir}/*" ! -path "/container-extractors/*" -type l | sort > "${outDir}"/filesystem/links.txt
 
 # analyse symbolic links
-rm -f /analysis/filesystem/symlinks.txt
-touch /analysis/filesystem/symlinks.txt
-filelist=`cat /analysis/filesystem/links.txt`
+rm -f "${outDir}"/filesystem/symlinks.txt
+touch "${outDir}"/filesystem/symlinks.txt
+filelist=`cat "${outDir}"/filesystem/links.txt`
 for file in $filelist
 do
-  echo "$file --> `readlink $file`" >> /analysis/filesystem/symlinks.txt
+  echo "$file --> `readlink $file`" >> "${outDir}"/filesystem/symlinks.txt
 done
 
 # examine distributions metadata
-uname -a > /analysis/uname.txt
-cat /etc/issue > /analysis/issue.txt
-cat /etc/debian_version > /analysis/release.txt
+uname -a > "${outDir}"/uname.txt
+cat /etc/issue > "${outDir}"/issue.txt
+cat /etc/debian_version > "${outDir}"/release.txt
 
 # list packages names (no version included)
-dpkg -l | sort > /analysis/packages_dpkg.txt
+dpkg -l | sort > "${outDir}"/packages_dpkg.txt
 
 # list packages (names only)
-cat /analysis/packages_dpkg.txt | grep ^ii | awk '{print $2}' | sed 's/:amd64//' | sort > /analysis/packages_dpkg-name-only.txt
+cat "${outDir}"/packages_dpkg.txt | grep ^ii | awk '{print $2}' | sed 's/:amd64//' | sort > "${outDir}"/packages_dpkg-name-only.txt
 
 # query package metadata and covered files
-packagenames=`cat /analysis/packages_dpkg-name-only.txt`
+packagenames=`cat "${outDir}"/packages_dpkg-name-only.txt`
 for package in $packagenames
 do
-  apt show $package  > /analysis/package-meta/${package}_apt.txt
-  dpkg -L $package  > /analysis/package-files/${package}_files.txt
+  apt show $package  > "${outDir}"/package-meta/"${package}"_apt.txt
+  dpkg -L $package  > "${outDir}"/package-files/"${package}"_files.txt
 done
 
 # copy resources in /usr/share/doc/
-mkdir -p /analysis/usr-share-doc/
-cp --no-preserve=mode -rf /usr/share/doc/* /analysis/usr-share-doc/ || true
+mkdir -p "${outDir}"/usr-share-doc/
+cp --no-preserve=mode -rf /usr/share/doc/* "${outDir}"/usr-share-doc/ || true
 
 # copy resources in /usr/share/common-licenses
-mkdir -p /analysis/usr-share-common-licenses/
-cp --no-preserve=mode -rf /usr/share/common-licenses/* /analysis/usr-share-common-licenses/ || true
+mkdir -p "${outDir}"/usr-share-common-licenses/
+cp --no-preserve=mode -rf /usr/share/common-licenses/* "${outDir}"/usr-share-common-licenses/ || true
 
 # if docker is installed dump the image list
-command -v docker && docker images > /analysis/docker-images.txt || true
+command -v docker && docker images > "${outDir}"/docker-images.txt || true
 
 # adapt ownership of extracted files to match folder creator user and group
-chown `stat -c '%u' /analysis`:`stat -c '%g' /analysis` -R /analysis
+chown `stat -c '%u' "${outDir}"`:`stat -c '%g' "${outDir}"` -R "${outDir}"

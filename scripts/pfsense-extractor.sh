@@ -18,6 +18,8 @@
 
 echo "Executing pfsense-extractor.sh"
 
+outDir="/var/opt/metaeffekt/extraction/analysis"
+
 # check the input flags
 
 OPTINT=1
@@ -40,56 +42,51 @@ while getopts "${OPTSPEC}" fopt ; do
 done
 
 # create folder structure in analysis folder (assuming sufficient permissions)
-mkdir -p /analysis/package-meta
-mkdir -p /analysis/package-files
-mkdir -p /analysis/filesystem
+mkdir -p "${outDir}"/package-meta
+mkdir -p "${outDir}"/package-files
+mkdir -p "${outDir}"/filesystem
 
 # write machineTag
-printf "%s\n" "$machineTag" > /analysis/machineTag.txt
-
-# create folder structure in analysis folder (assuming sufficient permissions)
-mkdir -p /analysis/package-meta
-mkdir -p /analysis/package-files
-mkdir -p /analysis/filesystem
+printf "%s\n" "$machineTag" > "${outDir}"/machineTag.txt
 
 # generate list of all files (excluding the analysis folders; excluding symlinks)
-find / ! -path "/analysis/*" ! -path "/container-extractors/*" -type f | sort > /analysis/filesystem/files.txt
-find / ! -path "/analysis/*" ! -path "/container-extractors/*" -type d | sort > /analysis/filesystem/folders.txt
-find / ! -path "/analysis/*" ! -path "/container-extractors/*" -type l | sort > /analysis/filesystem/links.txt
+find / ! -path "${outDir}/*" ! -path "/container-extractors/*" -type f | sort > "${outDir}"/filesystem/files.txt
+find / ! -path "${outDir}/*" ! -path "/container-extractors/*" -type d | sort > "${outDir}"/filesystem/folders.txt
+find / ! -path "${outDir}/*" ! -path "/container-extractors/*" -type l | sort > "${outDir}"/filesystem/links.txt
 
 # analyse symbolic links
-rm -f /analysis/filesystem/symlinks.txt
-touch /analysis/filesystem/symlinks.txt
-filelist="$(cat /analysis/filesystem/links.txt)"
+rm -f "${outDir}"/filesystem/symlinks.txt
+touch "${outDir}"/filesystem/symlinks.txt
+filelist="$(cat "${outDir}"/filesystem/links.txt)"
 for file in $filelist
 do
-  echo "$file --> `readlink $file`" >> /analysis/filesystem/symlinks.txt
+  echo "$file --> `readlink $file`" >> "${outDir}"/filesystem/symlinks.txt
 done
 
 # examine distributions metadata
-uname -a > /analysis/uname.txt
-cat /etc/version > /analysis/release.txt
+uname -a > "${outDir}"/uname.txt
+cat /etc/version > "${outDir}"/release.txt
 
 # list packages
-pkg info --all --full -R --raw-format json > /analysis/packages_pkg.json
+pkg info --all --full -R --raw-format json > "${outDir}"/packages_pkg.json
 
 # list packages names (no version included)
-pkg query '%n' | sort > /analysis/packages_pkg-name-only.txt
+pkg query '%n' | sort > "${outDir}"/packages_pkg-name-only.txt
 
 # query package metadata and covered files
 # information is already in packages_pkg.json which includes ALL available information about packages.
 
 # copy resources in /usr/share/doc
-mkdir -p /analysis/usr-share-doc/
-cp -rf /usr/share/doc/* /analysis/usr-share-doc/ || true
+mkdir -p "${outDir}"/usr-share-doc/
+cp -rf /usr/share/doc/* "${outDir}"/usr-share-doc/ || true
 
 # copy resources in /usr/share/licenses
-mkdir -p /analysis/usr-share-licenses/
-cp -rf /usr/local/share/licenses/* /analysis/usr-share-licenses/ || true
+mkdir -p "${outDir}"/usr-share-licenses/
+cp -rf /usr/local/share/licenses/* "${outDir}"/usr-share-licenses/ || true
 
 # if docker is installed dump the image list
 # this SHOULD NEVER WORK on pfSense! let's test anyway.
-command -v docker && docker images > /analysis/docker-images.txt || true
+command -v docker && docker images > "${outDir}"/docker-images.txt || true
 
 # adapt ownership of extracted files to match folder creator user and group
-chown -R `stat -f '%u' /analysis`:`stat -f '%g' /analysis` /analysis
+chown -R `stat -f '%u' "${outDir}"`:`stat -f '%g' "${outDir}"` "${outDir}"

@@ -47,7 +47,7 @@ mkdir -p "${outDir}"/package-files
 mkdir -p "${outDir}"/filesystem
 
 # write machineTag
-printf "%s\n" "$machineTag" > "${outDir}"/machineTag.txt
+printf "%s\n" "$machineTag" > "${outDir}"/machine-tag.txt
 
 # generate list of all files (excluding the analysis folders; excluding symlinks)
 find / ! -path "${outDir}/*" ! -path "/container-extractors/*" -type f | sort > "${outDir}"/filesystem/files.txt

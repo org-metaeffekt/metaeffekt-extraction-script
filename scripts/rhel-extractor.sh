@@ -22,10 +22,11 @@ outDir="/var/opt/metaeffekt/extraction/analysis"
 
 # check the input flags
 
-OPTINT=1
-OPTSPEC="t:"
+OPTIND=1
+OPTSPEC="te:"
 
 machineTag=""
+findExcludes=""
 
 while getopts "${OPTSPEC}" fopt ; do
   #echo "DEBUG: $fopt . $OPTARG"
@@ -34,6 +35,12 @@ while getopts "${OPTSPEC}" fopt ; do
       # set, at runtime, a custom machineTag for identification.
       # should only contain the base64 characters and - and _
       machineTag="${OPTARG}"
+      ;;
+    e)
+      # exclude this directory from find command.
+      # each path requires its own option.
+      # don't forget to quote pathnames (even with glob)!
+      findExcludes="${findExcludes} ! -path \"${OPTARG}\""
       ;;
     ?)
       exit 1

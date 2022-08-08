@@ -22,10 +22,11 @@ outDir="/var/opt/metaeffekt/extraction/analysis"
 
 # check the input flags
 
-OPTINT=1
-OPTSPEC="t:"
+OPTIND=1
+OPTSPEC="te:"
 
 machineTag=""
+findExcludes=""
 
 while getopts "${OPTSPEC}" fopt ; do
   #echo "DEBUG: $fopt . $OPTARG"
@@ -34,6 +35,12 @@ while getopts "${OPTSPEC}" fopt ; do
       # set, at runtime, a custom machineTag for identification.
       # should only contain the base64 characters and - and _
       machineTag="${OPTARG}"
+      ;;
+    e)
+      # exclude this directory from find command.
+      # each path requires its own option.
+      # don't forget to quote pathnames (even with glob)!
+      findExcludes="${findExcludes} ! -path \"${OPTARG}\""
       ;;
     ?)
       exit 1
@@ -49,10 +56,13 @@ mkdir -p "${outDir}"/filesystem
 # write machineTag
 printf "%s\n" "$machineTag" > "${outDir}"/machine-tag.txt
 
+# exclude some paths by default
+findExcludes="! -path \"${outDir}/*\" ! -path \"/container-extractors/*\" ${findExcludes}"
+
 # generate list of all files (excluding the analysis folders; excluding symlinks)
-find / ! -path "${outDir}/*" ! -path "/container-extractors/*" -type f | sort > "${outDir}"/filesystem/files.txt
-find / ! -path "${outDir}/*" ! -path "/container-extractors/*" -type d | sort > "${outDir}"/filesystem/folders.txt
-find / ! -path "${outDir}/*" ! -path "/container-extractors/*" -type l | sort > "${outDir}"/filesystem/links.txt
+find / ${findExcludes} -type f | sort > "${outDir}"/filesystem/files.txt
+find / ${findExcludes} -type d | sort > "${outDir}"/filesystem/folders.txt
+find / ${findExcludes} -type l | sort > "${outDir}"/filesystem/links.txt
 
 # analyse symbolic links
 rm -f "${outDir}"/filesystem/symlinks.txt
@@ -78,7 +88,7 @@ cat "${outDir}"/packages_dpkg.txt | grep ^ii | awk '{print $2}' | sed 's/:amd64/
 packagenames=`cat "${outDir}"/packages_dpkg-name-only.txt`
 for package in $packagenames
 do
-  apt show $package  > "${outDir}"/package-meta/"${package}"_apt.txt
+  apt show $package  > "${outDir}"/package-meta/"${package}"_apt.txt 2>"${outDir}"/debian_apt_stderr.txt
   dpkg -L $package  > "${outDir}"/package-files/"${package}"_files.txt
 done
 

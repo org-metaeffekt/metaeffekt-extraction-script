@@ -23,10 +23,13 @@ outDir="/var/opt/metaeffekt/extraction/analysis"
 # check the input flags
 
 OPTIND=1
-OPTSPEC="te:"
+OPTSPEC="t:e:"
 
 machineTag=""
 findExcludes=""
+
+# posix way to disable pathname expansion
+set -f
 
 while getopts "${OPTSPEC}" fopt ; do
   #echo "DEBUG: $fopt . $OPTARG"
@@ -39,14 +42,16 @@ while getopts "${OPTSPEC}" fopt ; do
     e)
       # exclude this directory from find command.
       # each path requires its own option.
-      # don't forget to quote pathnames (even with glob)!
-      findExcludes="${findExcludes} ! -path \"${OPTARG}\""
+      findExcludes="${findExcludes} -path ${OPTARG} -o"
       ;;
     ?)
       exit 1
       ;;
   esac
 done
+
+# reenable pathname expansion while we may need it
+set +f
 
 # create folder structure in analysis folder (assuming sufficient permissions)
 mkdir -p "${outDir}"/package-meta
@@ -56,13 +61,19 @@ mkdir -p "${outDir}"/filesystem
 # write machineTag
 printf "%s\n" "$machineTag" > "${outDir}"/machine-tag.txt
 
+# disable pathname expansion so find gets the patterns raw
+set -f
+
 # exclude some paths by default
-findExcludes="! -path \"${outDir}/*\" ! -path \"/container-extractors/*\" ${findExcludes}"
+findExcludes="${findExcludes} -path ${outDir}/* -o -path /container-extractors/*"
 
 # generate list of all files (excluding the analysis folders; excluding symlinks)
-find / ${findExcludes} -type f | sort > "${outDir}"/filesystem/files.txt
-find / ${findExcludes} -type d | sort > "${outDir}"/filesystem/folders.txt
-find / ${findExcludes} -type l | sort > "${outDir}"/filesystem/links.txt
+find / ! \( \( ${findExcludes} \) -prune \) -type f | sort > "${outDir}"/filesystem/files.txt
+find / ! \( \( ${findExcludes} \) -prune \) -type d | sort > "${outDir}"/filesystem/folders.txt
+find / ! \( \( ${findExcludes} \) -prune \) -type l | sort > "${outDir}"/filesystem/links.txt
+
+# reenable pathname expansion
+set +f
 
 # analyse symbolic links
 rm -f "${outDir}"/filesystem/symlinks.txt

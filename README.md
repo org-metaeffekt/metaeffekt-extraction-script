@@ -21,3 +21,7 @@ For aggregating low-profile inventory data in a production environment use the
   This exists so that a custom Identifier can be set.
   It should consist only of characters as allowed for base64 encoded strings
   (alphanumeric plus . and /).
+- \-e \<pattern\> : Exclude the path denoted by the pattern.
+  The pattern follows the rules find uses for -path options. <br>
+  > ! Note that paths that contain spaces might not parse properly in this
+  version of the script.

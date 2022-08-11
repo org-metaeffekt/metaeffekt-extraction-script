@@ -22,6 +22,7 @@ For aggregating low-profile inventory data in a production environment use the
   It should consist only of characters as allowed for base64 encoded strings
   (alphanumeric plus . and /).
 - \-e \<pattern\> : Exclude the path denoted by the pattern.
-  The pattern follows the rules find uses for -path options. <br>
-  > ! Note that paths that contain spaces might not parse properly in this
-  version of the script.
+  The pattern follows the rules `find` uses for -path options (which isn't always intuitive). <br>
+  For directories without overly odd characters however it works something like this: <br>
+  `-e "/do/not/traverse/this/directory"` <br>
+  Take care to not include trailing slashes as `find` doesn't like that.

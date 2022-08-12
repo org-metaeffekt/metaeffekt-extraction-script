@@ -24,5 +24,5 @@ For aggregating low-profile inventory data in a production environment use the
 - \-e \<pattern\> : Exclude the path denoted by the pattern.
   The pattern follows the rules `find` uses for -path options (which isn't always intuitive). <br>
   For directories without overly odd characters however it works something like this: <br>
-  `-e "/do/not/traverse/this/directory"` <br>
+  `-e "/do/not/traverse/this/directory" -e "/other/patterns*/to/exclude"` <br>
   Take care to not include trailing slashes as `find` doesn't like that.

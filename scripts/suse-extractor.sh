@@ -135,7 +135,10 @@ mkdir -p "${outDir}"/usr-share-licenses/
 cp --no-preserve=mode -rf /usr/share/licenses/* "${outDir}"/usr-share-licenses/ || true
 
 # if docker is installed dump the image list
-command -v docker && docker images > "${outDir}"/docker-images.txt || true
+command -v docker > /dev/null && docker images > "${outDir}"/docker-images.txt || true
+
+# if podman is installed, dump the image list (might return the same as docker with present docker -> podman symlinks)
+command -v podman > /dev/null && podman images > "${outDir}"/podman-images.txt || true
 
 # adapt ownership of extracted files to match folder creator user and group
 chown `stat -c '%u' "${outDir}"`:`stat -c '%g' "${outDir}"` -R "${outDir}"

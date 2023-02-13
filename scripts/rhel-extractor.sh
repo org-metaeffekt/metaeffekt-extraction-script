@@ -79,6 +79,7 @@ set +f
 mkdir -p "${outDir}"/package-meta
 mkdir -p "${outDir}"/package-files
 mkdir -p "${outDir}"/filesystem
+mkdir -p "${outDir}"/package-deps
 
 # write machineTag
 printf "%s\n" "$machineTag" > "${outDir}"/machine-tag.txt
@@ -126,6 +127,16 @@ for package in $packagenames
 do
   rpm -qi $package > "${outDir}"/package-meta/"${package}"_rpm.txt
   rpm -q --filesbypkg "${package}" | sed 's/[^/]*//' | sort > "${outDir}"/package-files/"${package}"_files.txt
+
+  # query package's dependencies. record all types (like weak and backward) of dependencies if possible.
+  packageDD="${outDir}/package-deps/${package}"
+  mkdir -p "$packageDD"
+  rpm -q --requires "$package" > "${packageDD}/requires.txt"
+  rpm -q --recommends "$package" > "${packageDD}/recommends.txt"
+  rpm -q --suggests "$package" > "${packageDD}/suggests.txt"
+
+  rpm -q --supplements "$package" > "${packageDD}/supplements.txt"
+  rpm -q --enhances "$package" > "${packageDD}/enhances.txt"
 done
 
 # copy resources in /usr/share/doc

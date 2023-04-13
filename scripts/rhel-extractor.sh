@@ -137,6 +137,7 @@ do
 
   rpm -q --supplements "$package" > "${packageDD}/supplements.txt"
   rpm -q --enhances "$package" > "${packageDD}/enhances.txt"
+  rpm -q --provides "$package" > "${packageDD}/provides.txt"
 done
 
 # copy resources in /usr/share/doc

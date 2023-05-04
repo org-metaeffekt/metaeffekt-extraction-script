@@ -112,7 +112,7 @@ do
 done
 
 # examine distributions metadata
-uname -a > "${outDir}"/uname.txtc
+uname -a > "${outDir}"/uname.txt
 cat /etc/issue > "${outDir}"/issue.txt
 cat /etc/almalinux-release > "${outDir}"/release.txt || true
 

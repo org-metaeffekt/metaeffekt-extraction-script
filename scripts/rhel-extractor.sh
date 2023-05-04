@@ -96,11 +96,10 @@ findExcludes="${findExcludes} -path \"${outDir}/*\" -o -path \"/container-extrac
 eval "find / ! \( \( ${findExcludes} \) -prune \) -type f" | sort > "${outDir}"/filesystem/files.txt
 eval "find / ! \( \( ${findExcludes} \) -prune \) -type d" | sort > "${outDir}"/filesystem/folders.txt
 eval "find / ! \( \( ${findExcludes} \) -prune \) -type l" | sort > "${outDir}"/filesystem/links.txt
-# TODO: add a file collection step outputting data with NUL-delimited paths (instead of unreliable newline)
-#  printing null-terminated can either be done by using gnu find's -print0 or perhaps with -exec printf "%s\0" \; or similar
-
-# reenable pathname expansion
-set +f
+# output data with NUL-delimited paths (instead of unreliable newline) as file paths don't contain NUL
+eval "find / ! \( \( ${findExcludes} \) -prune \) -type f -print0" | sort > "${outDir}"/filesystem/files_z.bin || true
+eval "find / ! \( \( ${findExcludes} \) -prune \) -type d -print0" | sort > "${outDir}"/filesystem/folders_z.bin || true
+eval "find / ! \( \( ${findExcludes} \) -prune \) -type l -print0" | sort > "${outDir}"/filesystem/links_z.bin || true
 
 # analyse symbolic links
 rm -f "${outDir}"/filesystem/symlinks.txt
@@ -110,6 +109,15 @@ for file in $filelist
 do
   echo "$file --> `readlink $file`" >> "${outDir}"/filesystem/symlinks.txt
 done
+rm -f "${outDir}"/filesystem/symlinks_z.txt
+touch "${outDir}"/filesystem/symlinks_z.txt
+for file in $filelist
+do
+  printf "${file}\x00$(readlink $file)\x00\x00" >> "${outDir}"/filesystem/symlinks_z.txt
+done
+
+# reenable pathname expansion
+set +f
 
 # examine distributions metadata
 uname -a > "${outDir}"/uname.txt
@@ -128,9 +136,8 @@ packagenames=`cat "${outDir}"/packages_rpm-name-only.txt`
 for package in $packagenames
 do
   rpm -qi $package > "${outDir}"/package-meta/"${package}"_rpm.txt
-  rpm -q --filesbypkg "${package}" | sed 's/[^/]*//' | sort > "${outDir}"/package-files/"${package}"_files.txt
-  # TODO: write a version of the file query but using NUL delimiters. turns out rpm supports this quite well enough.
-  #  rpm -q glibc --qf "[%{PROVIDES}\0]"
+  rpm -q glibc --qf "[%{FILENAMES}\n]" | sort > "${outDir}"/package-files/"${package}"_files.txt
+  # rpm doesn't support NUL-delimiters in query formats. trust that rpm disallows insane filenames.
 
   # query package's dependencies. record all types (like weak and backward) of dependencies if possible.
   packageDD="${outDir}/package-deps/${package}"

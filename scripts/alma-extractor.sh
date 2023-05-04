@@ -16,7 +16,7 @@
 # limitations under the License.
 #
 
-echo "Executing rhel-extractor.sh"
+echo "Executing alma-extractor.sh"
 
 # some variables
 
@@ -112,10 +112,9 @@ do
 done
 
 # examine distributions metadata
-uname -a > "${outDir}"/uname.txt
+uname -a > "${outDir}"/uname.txtc
 cat /etc/issue > "${outDir}"/issue.txt
-cat /etc/centos-release > "${outDir}"/release.txt || true
-cat /etc/redhat-release > "${outDir}"/release.txt || true
+cat /etc/almalinux-release > "${outDir}"/release.txt || true
 
 # list packages
 rpm -qa --qf '| %{NAME} | %{VERSION} | %{LICENSE} |\n' | sort > "${outDir}"/packages_rpm.txt

@@ -133,8 +133,8 @@ rpm -qa --qf '%{NAME}\n' | sort > "${outDir}"/packages_rpm-name-only.txt
 packagenames=`cat "${outDir}"/packages_rpm-name-only.txt`
 for package in $packagenames
 do
-  rpm -qi $package > "${outDir}"/package-meta/"${package}"_rpm.txt
-  rpm -q glibc --qf "[%{FILENAMES}\n]" | sort > "${outDir}"/package-files/"${package}"_files.txt
+  rpm -qi "$package" > "${outDir}"/package-meta/"${package}"_rpm.txt
+  rpm -q "$package" --qf "[%{FILENAMES}\n]" | sort > "${outDir}"/package-files/"${package}"_files.txt
   # rpm doesn't support NUL-delimiters in query formats. trust that rpm disallows insane filenames.
 
   # query package's dependencies. record all types (like weak and backward) of dependencies if possible.

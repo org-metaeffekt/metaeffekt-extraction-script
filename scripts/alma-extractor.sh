@@ -112,7 +112,7 @@ rm -f "${outDir}"/filesystem/symlinks_z.bin
 touch "${outDir}"/filesystem/symlinks_z.bin
 while IFS= read -r -d "" file
 do
-  printf "%s\x00%s\x00\x00" "${file}" "$(readlink "$file")" >> "${outDir}"/filesystem/symlinks_z.bin
+  printf "%s\x00 --> %s\x00\n" "${file}" "$(readlink "$file")" >> "${outDir}"/filesystem/symlinks_z.bin
 done < "${outDir}"/filesystem/links_z.bin
 
 # reenable pathname expansion

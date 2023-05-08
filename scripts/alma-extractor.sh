@@ -104,15 +104,12 @@ eval "find / ! \( \( ${findExcludes} \) -prune \) -type l -print0" | sort > "${o
 # analyse symbolic links
 rm -f "${outDir}"/filesystem/symlinks.txt
 touch "${outDir}"/filesystem/symlinks.txt
+rm -f "${outDir}"/filesystem/symlinks_z.txt
+touch "${outDir}"/filesystem/symlinks_z.txt
 filelist=`cat "${outDir}"/filesystem/links.txt`
 for file in $filelist
 do
   echo "$file --> `readlink $file`" >> "${outDir}"/filesystem/symlinks.txt
-done
-rm -f "${outDir}"/filesystem/symlinks_z.txt
-touch "${outDir}"/filesystem/symlinks_z.txt
-for file in $filelist
-do
   printf "${file}\x00$(readlink $file)\x00\x00" >> "${outDir}"/filesystem/symlinks_z.txt
 done
 

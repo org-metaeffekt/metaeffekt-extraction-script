@@ -96,6 +96,10 @@ findExcludes="${findExcludes} -path \"${outDir}/*\" -o -path \"/container-extrac
 eval "find / ! \( \( ${findExcludes} \) -prune \) -type f" | sort > "${outDir}"/filesystem/files.txt
 eval "find / ! \( \( ${findExcludes} \) -prune \) -type d" | sort > "${outDir}"/filesystem/folders.txt
 eval "find / ! \( \( ${findExcludes} \) -prune \) -type l" | sort > "${outDir}"/filesystem/links.txt
+# output data with NUL-delimited paths (instead of unreliable newline) as file paths don't contain NUL
+eval "find / ! \( \( ${findExcludes} \) -prune \) -type f -print0" | sort > "${outDir}"/filesystem/files_z.bin || true
+eval "find / ! \( \( ${findExcludes} \) -prune \) -type d -print0" | sort > "${outDir}"/filesystem/folders_z.bin || true
+eval "find / ! \( \( ${findExcludes} \) -prune \) -type l -print0" | sort > "${outDir}"/filesystem/links_z.bin || true
 
 # reenable pathname expansion
 set +f
@@ -103,10 +107,13 @@ set +f
 # analyse symbolic links
 rm -f "${outDir}"/filesystem/symlinks.txt
 touch "${outDir}"/filesystem/symlinks.txt
+rm -f "${outDir}"/filesystem/symlinks_z.txt
+touch "${outDir}"/filesystem/symlinks_z.txt
 filelist=`cat "${outDir}"/filesystem/links.txt`
 for file in $filelist
 do
   echo "$file --> `readlink $file`" >> "${outDir}"/filesystem/symlinks.txt
+  printf "${file}\x00$(readlink $file)\x00\x00" >> "${outDir}"/filesystem/symlinks_z.txt
 done
 
 # examine distributions metadata

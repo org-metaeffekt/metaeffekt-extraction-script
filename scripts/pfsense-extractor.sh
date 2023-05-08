@@ -101,20 +101,22 @@ eval "find / ! \( \( ${findExcludes} \) -prune \) -type f -print0" | sort > "${o
 eval "find / ! \( \( ${findExcludes} \) -prune \) -type d -print0" | sort > "${outDir}"/filesystem/folders_z.bin || true
 eval "find / ! \( \( ${findExcludes} \) -prune \) -type l -print0" | sort > "${outDir}"/filesystem/links_z.bin || true
 
-# reenable pathname expansion
-set +f
-
 # analyse symbolic links
 rm -f "${outDir}"/filesystem/symlinks.txt
 touch "${outDir}"/filesystem/symlinks.txt
-rm -f "${outDir}"/filesystem/symlinks_z.txt
-touch "${outDir}"/filesystem/symlinks_z.txt
-filelist=`cat "${outDir}"/filesystem/links.txt`
-for file in $filelist
+while IFS= read -r file
 do
   echo "$file --> `readlink $file`" >> "${outDir}"/filesystem/symlinks.txt
-  printf "${file}\x00$(readlink $file)\x00\x00" >> "${outDir}"/filesystem/symlinks_z.txt
-done
+done < "${outDir}"/filesystem/links.txt
+rm -f "${outDir}"/filesystem/symlinks_z.bin
+touch "${outDir}"/filesystem/symlinks_z.bin
+while IFS= read -r -d "" file
+do
+  printf "%s\x00%s\x00\x00" "${file}" "$(readlink "$file")" >> "${outDir}"/filesystem/symlinks_z.bin
+done < "${outDir}"/filesystem/links_z.bin
+
+# reenable pathname expansion
+set +f
 
 # examine distributions metadata
 uname -a > "${outDir}"/uname.txt

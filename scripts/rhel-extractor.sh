@@ -143,14 +143,16 @@ dumpDockerIfPresent()
 {
   checkFirstArgDefined "${1}"
   # if docker is installed dump the image list
-  command -v docker > /dev/null && docker images > "${1}"/docker-images.txt || true
+  command -v docker > /dev/null && docker image list > "${1}"/docker-images.txt || true
+  command -v docker > /dev/null && docker image list -a > "${1}"/docker-images-all.txt || true
 }
 
 dumpPodmanIfPresent()
 {
   checkFirstArgDefined "${1}"
   # if podman is installed, dump the image list (might return the same as docker with present docker -> podman symlinks)
-  command -v podman > /dev/null && podman images > "${1}"/podman-images.txt || true
+  command -v podman > /dev/null && podman image list > "${1}"/podman-images.txt || true
+  command -v podman > /dev/null && podman image list -a > "${1}"/podman-images-all.txt || true
 }
 
 adaptOutdirOwnership()
@@ -259,7 +261,7 @@ cp --no-preserve=mode -rf /usr/share/licenses/* "${outDir}"/usr-share-licenses/ 
 dumpDockerIfPresent "${outDir}"
 
 # if podman is installed, dump the image list (might return the same as docker with present docker -> podman symlinks)
-dumpDockerIfPresent "${outDir}"
+dumpPodmanIfPresent "${outDir}"
 
 # adapt ownership of extracted files to match folder creator user and group
 adaptOutdirOwnership "${outDir}"

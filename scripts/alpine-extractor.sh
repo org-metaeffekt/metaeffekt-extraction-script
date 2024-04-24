@@ -16,7 +16,7 @@
 # limitations under the License.
 #
 
-echo "Executing pfsense-extractor.sh"
+echo "Executing alpine-extractor.sh"
 
 # some variables
 # outDir MUST NOT end in space or newline characters due to how this script functions
@@ -336,30 +336,23 @@ set +f
 
 # examine distributions metadata
 uname -a > "${outDir}"/uname.txt
-cat /etc/version > "${outDir}"/release.txt
-
-# list packages
-pkg info --all --full -R --raw-format json > "${outDir}"/packages_pkg.json
+cat /etc/issue > "${outDir}"/issue.txt
+cat /etc/alpine-release > "${outDir}"/release.txt
 
 # list packages names (no version included)
-pkg query '%n' | sort > "${outDir}"/packages_pkg-name-only.txt
+apk info | sort > "${outDir}"/packages_apk.txt
 
 # query package metadata and covered files
-# information is already in packages_pkg.json which includes ALL available information about packages.
-
-# copy resources in /usr/share/doc
-mkdir -p "${outDir}"/usr-share-doc/
-cp -rf /usr/share/doc/* "${outDir}"/usr-share-doc/ || true
-
-# copy resources in /usr/share/licenses
-mkdir -p "${outDir}"/usr-share-licenses/
-cp -rf /usr/local/share/licenses/* "${outDir}"/usr-share-licenses/ || true
+packagenames=`cat "${outDir}"/packages_apk.txt`
+SEP=$'\n'
+for package in $packagenames
+do
+  apk info --license -d -w -t $package > "${outDir}"/package-meta/${package}_apk.txt
+  apk info -L $package > "${outDir}"/package-files/${package}_files.txt
+done
 
 # if docker is installed dump the image list
 dumpDockerIfPresent "${outDir}"
 
 # if podman is installed, dump the image list (might return the same as docker with present docker -> podman symlinks)
 dumpPodmanIfPresent "${outDir}"
-
-# adapt ownership of extracted files to match folder creator user and group
-adaptOutdirOwnership "${outDir}"

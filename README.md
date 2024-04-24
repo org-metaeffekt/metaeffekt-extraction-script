@@ -21,15 +21,23 @@ This figure illustrates how the script can be applied in a staged environment.
 #### Optional Arguments:
 
 - `-t <machineTag>` : Adds a tag to be stored with the analysis.
+  <br>
   This exists so that a custom Identifier can be set.
   It should consist only of characters as allowed for base64 encoded strings
   (alphanumeric plus . and /).
 - `-e <pattern>` : Exclude the path denoted by the pattern.
+  <br>
   The pattern follows the rules that the command `find` uses for its `-path` options (which aren't always intuitive).
   <br>
   For directories without overly odd characters, however, it works something like this:  
   `-e "/do/not/traverse/this/directory" -e "/other/patterns*/to/exclude"`  
   Take care to not include trailing slashes in your exclude paths, as `find` doesn't cope with it very well.
+- `-u <user>` : user to drop privileges to.
+  <br>
+  This is used with some commands that collect data specific to some users. Notably, this is used to rerun docker images and ps commands to explore user environments and output installed containers. Usernames should follow the unwritten laws of reasonable usernames, most notably not starting with a hyphen.
+  <br>
+  Doesn't support multiple users yet.
+  Use this to run analysis on yourself or another important user for which you wish to include data. Currently only supports a single
 
 ## Windows
 

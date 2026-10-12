@@ -386,6 +386,7 @@ uname -a > "${outDir}"/uname.txt
 cat /etc/issue > "${outDir}"/issue.txt
 cat /etc/centos-release > "${outDir}"/release.txt || true
 cat /etc/redhat-release > "${outDir}"/release.txt || true
+cat /etc/os-release > "${outDir}"/os-release.txt || true
 
 runRpmExtract "${outDir}"
 

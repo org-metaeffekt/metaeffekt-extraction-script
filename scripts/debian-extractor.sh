@@ -338,6 +338,7 @@ set +f
 uname -a > "${outDir}"/uname.txt
 cat /etc/issue > "${outDir}"/issue.txt
 cat /etc/debian_version > "${outDir}"/release.txt
+cat /etc/os-release > "${outDir}"/os-release.txt || true
 
 # list packages names (no version included)
 dpkg -l | sort > "${outDir}"/packages_dpkg.txt

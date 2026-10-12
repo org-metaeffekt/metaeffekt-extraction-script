@@ -338,6 +338,7 @@ set +f
 uname -a > "${outDir}"/uname.txt
 cat /etc/issue > "${outDir}"/issue.txt
 cat /etc/alpine-release > "${outDir}"/release.txt
+cat /etc/os-release > "${outDir}"/os-release.txt || true
 
 # list packages names (no version included)
 apk info | sort > "${outDir}"/packages_apk.txt

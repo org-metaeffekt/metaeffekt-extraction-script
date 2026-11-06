@@ -1,11 +1,9 @@
 # metaeffekt-extraction-script
 
-Scripts for extracting detailed information from a host.
+Scripts for extracting detailed information from different sources.
 
-The script should only be run in non-production environments, as it collects a
-significant amount of data and is somewhat heavy computationally.
-
-The script aggregates data in ``/var/opt/metaeffekt/extraction/analysis``.
+The scripts should only be run in non-production environments, as they collect a
+significant amount of data.
 
 For aggregating lower-profile inventory data, possibly from production environments,
 look at the [{metæffekt} inventory script](https://github.com/org-metaeffekt/metaeffekt-inventory-script).
@@ -14,7 +12,9 @@ look at the [{metæffekt} inventory script](https://github.com/org-metaeffekt/me
 
 This figure illustrates how the script can be applied in a staged environment.
 
-## Linux
+## Linux Extraction Scripts
+
+The linux extraction scripts aggregates data in ``/var/opt/metaeffekt/extraction/analysis``.
 
 ### Running the script
 
@@ -39,10 +39,10 @@ This figure illustrates how the script can be applied in a staged environment.
   Doesn't support multiple users yet.
   Use this to run analysis on yourself or another important user for which you wish to include data. Currently only supports a single
 
-## Windows
+## Windows Extraction Scripts
 
-The [scripts-windows](scripts-windows) folder contains multiple PowerShell scripts that are all required to run the
-extraction script on Windows. Only the [windows-extractor.ps1](scripts-windows/windows-extractor.ps1) script needs to
+The [scripts/windows](scripts/windows) folder contains multiple PowerShell scripts that are all required to run the
+extraction script on Windows. Only the [windows-extractor.ps1](scripts/windows/windows-extractor.ps1) script needs to
 be executed. The other scripts are called by the main script.
 
 ### Running the script
@@ -63,6 +63,12 @@ be executed. The other scripts are called by the main script.
 The results can be converted into an inventory of software components using the `extract-windows-inventory` goal of
 the `org.metaeffekt.core` : `ae-inventory-maven-plugin` plugin.
 
+## Conan Extraction Scripts
+
+Aggregates metadata to be able to construct a sufficiently precise SBOM. Check script files for further documentation.
+
 ## License
 
-- The files in the [scripts-windows](scripts-windows) are licensed under the [MIT license](LICENSE.MIT).
+- Files in the [scripts/windows](scripts/windows) are licensed under the [MIT license](LICENSE.MIT).
+- Files in [scripts/conan](scripts/conan) and [scripts/linux](scripts/linux) are licensed under the [Apache License 2.0](LICENSE).
+

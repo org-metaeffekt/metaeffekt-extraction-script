@@ -10,7 +10,7 @@ look at the [{metæffekt} inventory script](https://github.com/org-metaeffekt/me
 
 ![An illustration of how the script may be integrated](doc/overview.png)
 
-This figure illustrates how the script can be applied in a staged environment.
+This figure illustrates how the linux and windows scripts can be applied in a staged environment.
 
 ## Linux Extraction Scripts
 
